@@ -1,5 +1,8 @@
 # Readme
 
+This will mostly be tech demos for the Rust + WebAssembly + WebGL stack. If anything useful comes of this repo,
+we can extract it to a separate package and build from there.
+
 ## TL;DR
 
 - You need:
@@ -33,3 +36,9 @@ with [Conway's Game of Life Tutorial](https://rustwasm.github.io/book/game-of-li
 
 If you want to get an idea of how Rust, WebGL, and WebAssembly interact, follow this
 [Basic Water Tutorial](https://www.chinedufn.com/3d-webgl-basic-water-tutorial/).
+
+## Basic Structure
+
+- `./src` contains the Rust source code.
+- `./tests` contains tests for our Rust code.
+- `./www` contains the code for our web server.
