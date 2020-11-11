@@ -15,6 +15,9 @@ extern "C" {
 #[macro_export]
 macro_rules! log {
   ( $( $t:tt )* ) => {
+    // Because of the way macros work, we need to always explicitly require this method.
+    use crate::utils::logging::console_log;
+
     console_log(&format_args!( $( $t )* ).to_string());
   }  
 }  

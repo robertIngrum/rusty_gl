@@ -1,14 +1,14 @@
 extern crate web_sys;
 
-use crate::utils::logging::console_log;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
+use super::Color;
 
 #[wasm_bindgen]
 pub struct TriangleRenderer {
-  width:  u32,
-  height: u32,
+  width: u32,
+  height: u32
 }
 
 #[wasm_bindgen]
@@ -16,7 +16,7 @@ impl TriangleRenderer {
   pub fn new() -> TriangleRenderer {
     let width  = 100;
     let height = 100;
-
+    
     TriangleRenderer {
       width,
       height
@@ -24,30 +24,13 @@ impl TriangleRenderer {
   }
 
   pub fn render(&self) -> Result<(), JsValue> {
-    // --------------------------------
     // Get document and canvas elements
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas   = document.get_element_by_id("canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-    // --------------------------------
 
-    // -------------------
-    // Color parsing logic
-    let shape_red_input   = document.get_element_by_id("shape-red").unwrap();
-    let shape_green_input = document.get_element_by_id("shape-green").unwrap();
-    let shape_blue_input  = document.get_element_by_id("shape-blue").unwrap();
-
-    let shape_red_input:   web_sys::Element = shape_red_input.dyn_into::<web_sys::Element>()?;
-    let shape_green_input: web_sys::Element = shape_green_input.dyn_into::<web_sys::Element>()?;
-    let shape_blue_input:  web_sys::Element = shape_blue_input.dyn_into::<web_sys::Element>()?;
-
-    // Get value of element attribute and cast to float
-    let shape_red_color   = shape_red_input.get_attribute("value").unwrap().parse::<f32>().unwrap();
-    let shape_green_color = shape_green_input.get_attribute("value").unwrap().parse::<f32>().unwrap();
-    let shape_blue_color  = shape_blue_input.get_attribute("value").unwrap().parse::<f32>().unwrap();
-
-    log!("Red: {}, Green: {}, Blue: {}", shape_red_color, shape_green_color, shape_blue_color);
-    // -------------------
+    let backgroundColor = self.fetchBackgroundColor(&document).unwrap();
+    let shapeColor      = self.fetchShapeColor(&document).unwrap();
 
     let context = canvas
         .get_context("webgl")?
@@ -65,14 +48,20 @@ impl TriangleRenderer {
       "#,
     )?;
 
+    let frag_shader_source = format!(
+      r#"
+      void main() {{
+        gl_FragColor = vec4({}, {}, {}, 1.0);
+      }}
+      "#,
+      shapeColor.red,
+      shapeColor.green,
+      shapeColor.blue,
+    );
     let frag_shader = self.compile_shader(
       &context,
       WebGlRenderingContext::FRAGMENT_SHADER,
-      r#"
-      void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-      }
-      "#,
+      &frag_shader_source
     )?;
 
     let program = self.link_program(&context, &vert_shader, &frag_shader).unwrap();
@@ -104,8 +93,12 @@ impl TriangleRenderer {
     context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
     context.enable_vertex_attrib_array(0);
 
-    context.clear_color(shape_red_color, shape_green_color, shape_blue_color, 1.0);
-    // context.clear_color(0.0, 0.0, 0.0, 1.0);
+    context.clear_color(
+      backgroundColor.red,
+      backgroundColor.green,
+      backgroundColor.blue,
+      1.0
+    );
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
     context.draw_arrays(
@@ -170,5 +163,28 @@ impl TriangleRenderer {
           .unwrap_or_else(|| String::from("Unknown error creating program object."))
       )
     }
+  }
+
+  fn fetchShapeColor(&self, document: &web_sys::Document) -> Result<Color, JsValue> {
+    let red   = self.parseInputColorValue(document, "shape-red").unwrap();
+    let green = self.parseInputColorValue(document, "shape-green").unwrap();
+    let blue  = self.parseInputColorValue(document, "shape-blue").unwrap();
+
+    Ok(Color::new(red, green, blue))
+  }
+
+  fn fetchBackgroundColor(&self, document: &web_sys::Document) -> Result<Color, JsValue> {
+    let red   = self.parseInputColorValue(document, "background-red").unwrap();
+    let green = self.parseInputColorValue(document, "background-green").unwrap();
+    let blue  = self.parseInputColorValue(document, "background-blue").unwrap();
+
+    Ok(Color::new(red, green, blue))
+  }
+
+  fn parseInputColorValue(&self, document: &web_sys::Document, id: &str) -> Result<f32, JsValue> {
+    let input = document.get_element_by_id(id).unwrap();
+    let input: web_sys::HtmlInputElement = input.dyn_into::<web_sys::HtmlInputElement>()?;
+
+    Ok(input.value().parse::<f32>().unwrap())
   }
 }
