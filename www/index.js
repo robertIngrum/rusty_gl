@@ -1,3 +1,4 @@
-import * as wasm from "rusty_gl";
+import { TriangleRenderer } from "rusty_gl";
 
-wasm.greet();
+const triangleRenderer = TriangleRenderer.new()
+triangleRenderer.render();

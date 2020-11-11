@@ -5,7 +5,16 @@
     <title>Rusty GL</title>
   </head>
   <body>
-    <canvas id="canvas" height="150" width="150" />
+    <canvas id="canvas" height="150" width="150"> </canvas>
+
+    <label for="shape-red">Red:</label>
+    <input id="shape-red" type="number" min="0" max="1" step="0.1" value="0.5"></input>
+
+    <label for="shape-green">Green:</label>
+    <input id="shape-green" type="number" min="0" max="1" step="0.1" value="1.0"></input>
+
+    <label for="shape-blue">Blue:</label>
+    <input id="shape-blue" type="number" min="0" max="1" step="0.1" value="0.5"></input>
 
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
