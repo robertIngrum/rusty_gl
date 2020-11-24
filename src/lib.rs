@@ -1,19 +1,25 @@
-mod utils;
-
+// --------------------- //
+// INTERNAL DEPENDENCIES //
+// --------------------- //
 use wasm_bindgen::prelude::*;
 
-// When the `wee_allock` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_allock::WeeAllock::INIT;
-
-#[wasm_bindgen]
-extern {
-  fn alert(s: &str);
+#[macro_use]
+mod utils {
+  #[macro_use]
+  pub mod logging;
+  pub mod config;
 }
 
-#[wasm_bindgen]
-pub fn greet() {
-  alert("Hello world!");
+// --------------------- //
+//    PUBLIC  MODULES    //
+// --------------------- //
+pub mod shape_renderer;
+
+// --------------------- //
+//     STARTUP LOGIC     //
+// --------------------- //
+#[wasm_bindgen(start)]
+pub fn start() {
+  // Enable console debugging
+  utils::config::set_panic_hook();
 }

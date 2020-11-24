@@ -2,9 +2,41 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
+    <title>Rusty GL</title>
   </head>
-  <body>
+  <body style="background: #333; color: #ddd; margin: 40px 100px;">
+    <canvas id="canvas" height="200" width="200"> </canvas>
+
+    <div>
+      <br />
+      <label for="vertex-count">Vertex Count:</label>
+      <input id="vertex-count" type="number" min="3" max="100" step="1" value="3"></input>
+    </div>
+
+    <div>
+      <p>Shape Color:</p>
+      <label for="shape-red">Red:</label>
+      <input id="shape-red" type="number" min="0" max="1" step="0.1" value="1.0"></input>
+  
+      <label for="shape-green">Green:</label>
+      <input id="shape-green" type="number" min="0" max="1" step="0.1" value="1.0"></input>
+  
+      <label for="shape-blue">Blue:</label>
+      <input id="shape-blue" type="number" min="0" max="1" step="0.1" value="1.0"></input>  
+    </div>
+    
+    <div>
+      <p>Background Color:</p>
+      <label for="background-red">Red:</label>
+      <input id="background-red" type="number" min="0" max="1" step="0.1" value="0.0"></input>
+  
+      <label for="background-green">Green:</label>
+      <input id="background-green" type="number" min="0" max="1" step="0.1" value="0.0"></input>
+  
+      <label for="background-blue">Blue:</label>
+      <input id="background-blue" type="number" min="0" max="1" step="0.1" value="0.0"></input>  
+    </div>
+
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
   </body>
