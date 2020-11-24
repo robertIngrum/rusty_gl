@@ -3,39 +3,51 @@ extern crate web_sys;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
-use super::Color;
+use super::{Color, RegularPolygon, Vertex};
 
 #[wasm_bindgen]
 pub struct TriangleRenderer {
-  width: u32,
-  height: u32
+  element_id: String,
+  width: i32,
+  height: i32
 }
 
 #[wasm_bindgen]
 impl TriangleRenderer {
-  pub fn new() -> TriangleRenderer {
-    let width  = 100;
-    let height = 100;
-    
-    TriangleRenderer {
-      width,
-      height
-    }
+  pub fn new(element_id: String, width: i32, height: i32) -> TriangleRenderer {
+    TriangleRenderer { element_id, width, height }
+  }
+
+  pub fn setViewport(&self, x: i32, y: i32, width: i32, height: i32) -> Result<(), JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas   = document.get_element_by_id(&self.element_id).unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+    let context = canvas
+      .get_context("webgl")?
+      .unwrap()
+      .dyn_into::<WebGlRenderingContext>()?;
+
+    context.viewport(x, y, width, height);
+
+    Ok(())
   }
 
   pub fn render(&self) -> Result<(), JsValue> {
     // Get document and canvas elements
     let document = web_sys::window().unwrap().document().unwrap();
-    let canvas   = document.get_element_by_id("canvas").unwrap();
+    let canvas   = document.get_element_by_id(&self.element_id).unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let backgroundColor = self.fetchBackgroundColor(&document).unwrap();
     let shapeColor      = self.fetchShapeColor(&document).unwrap();
+    let vertex_count    = self.fetchVertexCount(&document).unwrap();
 
     let context = canvas
         .get_context("webgl")?
         .unwrap()
         .dyn_into::<WebGlRenderingContext>()?;
+
+    context.viewport(0, 0, self.width, self.height);
 
     let vert_shader = self.compile_shader(
       &context,
@@ -54,9 +66,9 @@ impl TriangleRenderer {
         gl_FragColor = vec4({}, {}, {}, 1.0);
       }}
       "#,
-      shapeColor.red,
-      shapeColor.green,
-      shapeColor.blue,
+      1.0 - shapeColor.red,
+      1.0 - shapeColor.green,
+      1.0 - shapeColor.blue,
     );
     let frag_shader = self.compile_shader(
       &context,
@@ -67,7 +79,26 @@ impl TriangleRenderer {
     let program = self.link_program(&context, &vert_shader, &frag_shader).unwrap();
     context.use_program(Some(&program));
 
-    let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
+    let triangle = RegularPolygon {
+      center: Vertex { x: 0.0, y: 0.0 },
+      radius: 0.7,
+      vertex_count: vertex_count
+    };
+    
+    let mut vertices = Vec::new();
+    for n in 0..(triangle.vertex_count) {
+      vertices.push(triangle.coordinate(n));
+    }
+    let mut vertex_vector = Vec::new();
+    for n in 0..(triangle.vertex_count) {
+      vertex_vector.push(vertices[n as usize].x);
+      vertex_vector.push(vertices[n as usize].y);
+      vertex_vector.push(0.0);
+    }
+    let vertex_array: &[_] = &vertex_vector;
+
+    // Note: Use this to debug coordinates
+    // log!("{:?}", vertex_array);
 
     let buffer = context.create_buffer().ok_or("Failed to create buffer.")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
@@ -81,7 +112,7 @@ impl TriangleRenderer {
     // As a result, after `Float32Array::view` we have to be very careful not to
     // do any memory allocations before it's dropped.
     unsafe {
-      let vert_array = js_sys::Float32Array::view(&vertices);
+      let vert_array = js_sys::Float32Array::view(&vertex_array);
 
       context.buffer_data_with_array_buffer_view(
           WebGlRenderingContext::ARRAY_BUFFER,
@@ -94,17 +125,17 @@ impl TriangleRenderer {
     context.enable_vertex_attrib_array(0);
 
     context.clear_color(
-      backgroundColor.red,
-      backgroundColor.green,
-      backgroundColor.blue,
+      1.0 - backgroundColor.red,
+      1.0 - backgroundColor.green,
+      1.0 - backgroundColor.blue,
       1.0
     );
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
     context.draw_arrays(
-      WebGlRenderingContext::TRIANGLES,
+      WebGlRenderingContext::TRIANGLE_FAN,
       0,
-      (vertices.len() / 3) as i32,
+      (vertex_array.len() / 3) as i32,
     );
 
     Ok(())
@@ -163,6 +194,13 @@ impl TriangleRenderer {
           .unwrap_or_else(|| String::from("Unknown error creating program object."))
       )
     }
+  }
+
+  fn fetchVertexCount(&self, document: &web_sys::Document) -> Result<u32, JsValue> {
+    let input = document.get_element_by_id("vertex-count").unwrap();
+    let input: web_sys::HtmlInputElement = input.dyn_into::<web_sys::HtmlInputElement>()?;
+
+    Ok(input.value().parse::<u32>().unwrap())
   }
 
   fn fetchShapeColor(&self, document: &web_sys::Document) -> Result<Color, JsValue> {

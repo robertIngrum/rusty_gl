@@ -4,8 +4,14 @@
     <meta charset="utf-8">
     <title>Rusty GL</title>
   </head>
-  <body style="background: #333; color: #ddd;">
-    <canvas id="canvas" height="150" width="150"> </canvas>
+  <body style="background: #333; color: #ddd; margin: 40px 100px;">
+    <canvas id="canvas" height="200" width="200"> </canvas>
+
+    <div>
+      <br />
+      <label for="vertex-count">Vertex Count:</label>
+      <input id="vertex-count" type="number" min="3" max="100" step="1" value="3"></input>
+    </div>
 
     <div>
       <p>Shape Color:</p>

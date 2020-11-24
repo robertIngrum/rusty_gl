@@ -37,6 +37,8 @@ with [Conway's Game of Life Tutorial](https://rustwasm.github.io/book/game-of-li
 If you want to get an idea of how Rust, WebGL, and WebAssembly interact, follow this
 [Basic Water Tutorial](https://www.chinedufn.com/3d-webgl-basic-water-tutorial/).
 
+[Rust Playground](https://play.rust-lang.org/)
+
 ## Basic Structure
 
 - `./src` contains the Rust source code.

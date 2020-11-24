@@ -3,7 +3,9 @@
 // "./shape_renderer/mod.rs" (this one). Here we can load other dependencies.
 
 use self::colors::Color;
+use self::polygons::{RegularPolygon, Vertex};
 
 pub mod triangle_renderer;
 
 mod colors;
+mod polygons;
