@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "server": "node server.js"
   },
   "keywords": [
     "webassembly",
@@ -19,9 +20,11 @@
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.29.4",
     "webpack-cli": "^3.1.1",
+    "webpack-dev-middleware": "^4.0.2",
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "rusty_gl": "file:../pkg"
   }
 }
